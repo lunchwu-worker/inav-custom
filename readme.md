@@ -157,4 +157,94 @@ https://github.com/iNavFlight/inav-configurator-nightly/releases
 ## INAV Releases
 https://github.com/iNavFlight/inav/releases
 
+---
+
+## 本地编译指南 (SPEEDYBEEF405WING)
+
+本节记录在 Linux (WSL2 Ubuntu 22.04) 环境下从源码编译 **SPEEDYBEEF405WING** 固件的完整步骤。
+
+### 环境要求
+
+| 依赖 | 最低版本 | 说明 |
+|------|----------|------|
+| cmake | 3.13+ | 构建系统生成器 |
+| make / ninja | - | 构建管理器 |
+| ruby | 2.7+ | 生成 settings_generated 文件 |
+| gcc | 9+ | 本机编译器（用于 host 工具） |
+| arm-none-eabi-gcc | 9.3.1 / 13.2.1 | ARM 交叉编译工具链 |
+
+### 安装依赖 (Ubuntu/Debian)
+
+```bash
+sudo apt update && sudo apt install -y git make cmake ruby gcc
+```
+
+> 如果网络不畅，可配置代理：
+> ```bash
+> export http_proxy="http://127.0.0.1:10808"
+> export https_proxy="http://127.0.0.1:10808"
+> ```
+
+### 克隆仓库
+
+```bash
+git clone https://github.com/iNavFlight/inav.git
+cd inav
+```
+
+### 配置 CMake
+
+```bash
+mkdir -p build && cd build
+
+# 使用 INAV 内置工具链（自动下载 ARM GCC 13.2.1）
+cmake ..
+
+# 或者使用系统/已有工具链并跳过版本检查
+cmake -DCOMPILER_VERSION_CHECK=OFF ..
+```
+
+### 编译目标固件
+
+```bash
+# 编译单个目标
+make -j$(nproc) SPEEDYBEEF405WING
+
+# 编译完成后，固件位于 build 目录
+ls -l inav_*_SPEEDYBEEF405WING.hex
+```
+
+### 常见问题
+
+#### 1. 工具链下载超时
+如果自动下载 ARM 工具链超时，可手动下载并解压到 `tools/` 目录，或使用 `-DCOMPILER_VERSION_CHECK=OFF` 跳过版本检查，使用系统已有的 `arm-none-eabi-gcc`。
+
+#### 2. `a label can only be part of a statement` 编译错误
+此问题出现在 `src/main/sensors/battery.c` 中，原因是 C89/C90 标准不允许在 `case` 标签后直接声明变量。解决方法是将变量声明包裹在代码块 `{}` 中：
+
+```c
+case VOLTAGE_SENSOR_SMARTPORT:
+    {
+        int16_t *smartportVoltageData = smartportMasterGetVoltageData();
+        // ...
+    }
+    break;
+```
+
+#### 3. 缺少 ruby
+```bash
+sudo apt install -y ruby
+```
+
+### 刷写固件
+
+使用 **INAV Configurator** 选择本地固件文件：
+```
+build/inav_9.0.0_SPEEDYBEEF405WING.hex
+```
+
+或通过命令行工具 `dfu-util` / `stm32flash` 刷写。
+
+---
+
 
