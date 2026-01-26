@@ -97,6 +97,8 @@ main_sources(COMMON_SRC
     drivers/accgyro/accgyro_mpu9250.h
     drivers/accgyro/accgyro_lsm6dxx.c
     drivers/accgyro/accgyro_lsm6dxx.h
+    drivers/accgyro/accgyro_lsm6dsv16x.c
+    drivers/accgyro/accgyro_lsm6dsv16x.h
 
     drivers/adc.c
     drivers/adc.h
