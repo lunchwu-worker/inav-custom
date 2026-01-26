@@ -304,8 +304,8 @@ static void updateBatteryVoltage(timeUs_t timeDelta, bool justConnected)
             } else {
                 vbat = 0;
             }
-            break;
         }
+        break;
 #endif
     case VOLTAGE_SENSOR_NONE:
         default:
@@ -623,8 +623,8 @@ void currentMeterUpdate(timeUs_t timeDelta)
                 } else {
                     amperage = 0;
                 }
-                break;
             }
+            break;
 #endif
 #if defined(USE_FAKE_BATT_SENSOR)
         case CURRENT_SENSOR_FAKE:
