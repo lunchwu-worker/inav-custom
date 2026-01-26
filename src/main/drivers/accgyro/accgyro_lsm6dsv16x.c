@@ -214,6 +214,7 @@ bool lsm6dsv16xGyroDetect(gyroDev_t *gyro)
     lsm6dsv16xContextData_t *ctx = busDeviceGetScratchpadMemory(gyro->busDev);
     ctx->chipMagicNumber = 0xD7;  // Magic number for LSM6DSV16X
 
+    gyro->gyroAlign = gyro->busDev->param;
     gyro->initFn = lsm6dsv16xGyroInit;
     gyro->readFn = lsm6dsv16xGyroRead;
     gyro->intStatusFn = gyroCheckDataReady;
