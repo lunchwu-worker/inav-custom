@@ -104,6 +104,7 @@
 #define ICM426XX_RA_ACCEL_CONFIG_STATIC4            0x05  // User Bank 2
 
 static bool is42688P = false;
+static bool isIIM42652 = false;
 
 typedef struct aafConfig_s {
     uint16_t freq;
@@ -289,12 +290,19 @@ static bool icm42605DeviceDetect(busDevice_t * dev)
         busRead(dev, MPU_RA_WHO_AM_I, &tmp);
 
         switch (tmp) {
-            /* ICM42605 and ICM42688P share the register structure*/
+            /* ICM42605, ICM42688P and IIM42652 share the register structure*/
             case ICM42605_WHO_AM_I_CONST:
                 is42688P = false;
+                isIIM42652 = false;
                 return true;
             case ICM42688P_WHO_AM_I_CONST:
                 is42688P = true;
+                isIIM42652 = false;
+                return true;
+            case IIM42652_WHO_AM_I_CONST:
+                // IIM42652 uses same AAF config as ICM42605
+                is42688P = false;
+                isIIM42652 = true;
                 return true;
 
             default:
@@ -406,8 +414,8 @@ static const aafConfig_t *getGyroAafConfig(bool is42688, const uint16_t desiredL
         }
     }
 
-    LOG_VERBOSE(GYRO, "ICM426%s AAF CONFIG { %d, %d } -> { %d }; delt: %d deltSqr: %d, shift: %d",
-		(is42688P ? "88" : "05"),
+    LOG_VERBOSE(GYRO, "%s AAF CONFIG { %d, %d } -> { %d }; delt: %d deltSqr: %d, shift: %d",
+		(isIIM42652 ? "IIM42652" : (is42688P ? "ICM42688" : "ICM42605")),
                 desiredLpf, desiredFreq,
                 candidate->freq,
                 candidate->delt, candidate->deltSqr, candidate->bitshift);
