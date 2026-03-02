@@ -1,0 +1,1 @@
+target_stm32f405xg(HK4530_FC_F4_V01)

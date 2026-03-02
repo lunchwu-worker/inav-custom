@@ -1,0 +1,1 @@
+target_stm32f722xe(HK4530_FC_F7_V01)
