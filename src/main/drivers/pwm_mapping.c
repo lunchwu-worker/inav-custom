@@ -370,6 +370,12 @@ void pwmBuildTimerOutputList(timMotorServoHardware_t * timOutputs, bool isMixerU
 
 static bool motorsUseHardwareTimers(void)
 {
+#ifdef USE_DSHOT_BITBANG
+    motorPwmProtocolTypes_e proto = motorConfig()->motorPwmProtocol;
+    if (proto == PWM_TYPE_DSHOT600 || proto == PWM_TYPE_DSHOT300 || proto == PWM_TYPE_DSHOT150) {
+        return false;
+    }
+#endif
     return getMotorProtocolProperties(motorConfig()->motorPwmProtocol)->usesHwTimer;
 }
 

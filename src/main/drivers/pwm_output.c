@@ -45,6 +45,11 @@
 #include "drivers/timer_impl.h"
 #include "drivers/timer.h"
 
+#ifdef USE_DSHOT_BITBANG
+#include "drivers/dshot_bitbang.h"
+static bool useDshotBitbang = false;
+#endif
+
 #define MULTISHOT_5US_PW    (MULTISHOT_TIMER_HZ * 5 / 1000000.0f)
 #define MULTISHOT_20US_MULT (MULTISHOT_TIMER_HZ * 20 / 1000000.0f / 1000.0f)
 
@@ -482,6 +487,22 @@ void pwmCompleteMotorUpdate(void) {
             return;
         }
 
+#ifdef USE_DSHOT_BITBANG
+        if (useDshotBitbang) {
+            uint16_t motorValues[MAX_MOTORS];
+            bool motorTelemetry[MAX_MOTORS];
+            for (int index = 0; index < motorCount; index++) {
+                motorValues[index] = motors[index].value;
+                motorTelemetry[index] = motors[index].requestTelemetry;
+            }
+            dshotBitbangUpdateComplete(motorCount, motorValues, motorTelemetry);
+            for (int index = 0; index < motorCount; index++) {
+                motors[index].requestTelemetry = motorTelemetry[index];
+            }
+            return;
+        }
+#endif
+
 #ifdef USE_DSHOT_DMAR
         for (int index = 0; index < motorCount; index++) {
             if (motors[index].pwmPort && motors[index].pwmPort->configured) {
@@ -555,6 +576,12 @@ void pwmMotorPreconfigure(void)
         case PWM_TYPE_DSHOT150:
             motorConfigDigitalUpdateInterval(getEscUpdateFrequency());
             motorWritePtr = pwmWriteDigital;
+#ifdef USE_DSHOT_BITBANG
+            useDshotBitbang = dshotBitbangInit(getMotorCount());
+            if (useDshotBitbang) {
+                LOG_INFO(PWM, "DSHOT Bitbang mode active");
+            }
+#endif
             break;
 #endif
     }
@@ -628,6 +655,11 @@ bool pwmMotorConfig(const timerHardware_t *timerHardware, uint8_t motorIndex, bo
 // Helper function for ESC passthrough
 ioTag_t pwmGetMotorPinTag(int motorIndex)
 {
+#ifdef USE_DSHOT_BITBANG
+    if (useDshotBitbang) {
+        return dshotBitbangGetMotorPinTag(motorIndex);
+    }
+#endif
     if (motors[motorIndex].pwmPort) {
         return motors[motorIndex].pwmPort->tch->timHw->tag;
     }
