@@ -1,0 +1,1 @@
+target_stm32f405xg(F405_BT_V15)

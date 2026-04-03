@@ -103,6 +103,12 @@
 #define ICM42605_CS_PIN         PA4
 #define ICM42605_SPI_BUS        BUS_SPI1
 
+// ICM42607 (shares same SPI bus and CS pin as ICM42605)
+#define USE_IMU_ICM42607
+#define IMU_ICM42607_ALIGN      CW270_DEG
+#define ICM42607_CS_PIN         PA4
+#define ICM42607_SPI_BUS        BUS_SPI1
+
 // LSM6DSV16X (optional, shares same SPI bus and CS pin)
 #define USE_IMU_LSM6DSV16X
 #define IMU_LSM6DSV16X_ALIGN    CW270_DEG
@@ -163,6 +169,7 @@
 
 // ***************  OTHERS *************************
 #define DEFAULT_FEATURES        (FEATURE_TX_PROF_SEL | FEATURE_OSD | FEATURE_CURRENT_METER | FEATURE_VBAT | FEATURE_TELEMETRY | FEATURE_BLACKBOX | FEATURE_AIRMODE)
+#define VBAT_SCALE_DEFAULT    2300
 #define CURRENT_METER_SCALE   195
 
 #define USE_DSHOT
