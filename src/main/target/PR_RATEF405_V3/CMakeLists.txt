@@ -1,0 +1,1 @@
+target_stm32f405xg(PR_RATEF405_V3)
