@@ -1,0 +1,1 @@
+target_stm32f722xe(PR_F722_BT_V18_PY25Q)

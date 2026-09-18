@@ -290,7 +290,9 @@ static bool icm42605DeviceDetect(busDevice_t * dev)
         busRead(dev, MPU_RA_WHO_AM_I, &tmp);
 
         switch (tmp) {
-            /* ICM42605, ICM42688P and IIM42652 share the register structure*/
+            /* ICM42605, ICM42688P, IIM42652 and ICM40608 share the register structure*/
+            case ICM40608_WHO_AM_I_CONST:
+                // ICM40608 uses same AAF config as ICM42605
             case ICM42605_WHO_AM_I_CONST:
                 is42688P = false;
                 isIIM42652 = false;

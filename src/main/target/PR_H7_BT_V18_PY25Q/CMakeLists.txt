@@ -1,0 +1,1 @@
+target_stm32h743xi(PR_H7_BT_V18_PY25Q)

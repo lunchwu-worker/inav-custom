@@ -31,6 +31,7 @@
 #define ICM42605_WHO_AM_I_CONST             (0x42)
 #define ICM42688P_WHO_AM_I_CONST            (0x47)
 #define IIM42652_WHO_AM_I_CONST             (0x6F)
+#define ICM40608_WHO_AM_I_CONST             (0x39)
 
 
 // RA = Register Address
