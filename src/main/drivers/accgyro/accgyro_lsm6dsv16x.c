@@ -38,7 +38,7 @@
 #include "drivers/accgyro/accgyro_mpu.h"
 #include "drivers/accgyro/accgyro_lsm6dsv16x.h"
 
-#if defined(USE_IMU_LSM6DSV16X)
+#if defined(USE_IMU_LSM6DSV16X) || defined(USE_IMU_LSM6DSK320X)
 
 typedef struct __attribute__ ((__packed__)) lsm6dsv16xContextData_s {
     uint16_t    chipMagicNumber;
@@ -243,5 +243,133 @@ bool lsm6dsv16xAccDetect(accDev_t *acc)
     return true;
 }
 
-#endif // USE_IMU_LSM6DSV16X
+#if defined(USE_IMU_LSM6DSK320X)
+
+#define LSM6DSK320X_MAGIC 0x75
+
+// Flight use is the low-g accelerometer (±16g, 2048 LSB/g).
+// The ±320g high-g channel (about 102 LSB/g) is left unused.
+static void lsm6dsk320xConfig(gyroDev_t *gyro)
+{
+    busDevice_t *dev = gyro->busDev;
+
+    gyro->sampleRateIntervalUs = 125;  // 8kHz
+
+    busSetSpeed(dev, BUS_SPEED_INITIALIZATION);
+
+    lsm6dsv16xWriteRegister(dev, LSM6DSV16X_REG_CTRL3, LSM6DSV16X_CTRL3_SW_RESET, 50);
+
+    uint8_t ctrl3;
+    int resetTimeout = 100;
+    do {
+        delay(1);
+        busRead(dev, LSM6DSV16X_REG_CTRL3, &ctrl3);
+        if (--resetTimeout <= 0) {
+            break;
+        }
+    } while (ctrl3 & LSM6DSV16X_CTRL3_SW_RESET);
+
+    delay(35);
+
+    lsm6dsv16xWriteRegister(dev, LSM6DSV16X_REG_CTRL3,
+                            LSM6DSV16X_CTRL3_IF_INC | LSM6DSV16X_CTRL3_BDU, 1);
+
+    lsm6dsv16xWriteRegister(dev, LSM6DSV16X_REG_HAODR_CFG, LSM6DSV16X_HAODR_MODE1, 1);
+
+    // Low-g full scale ±16g. Do not select the high-g ±320g channel.
+    lsm6dsv16xWriteRegister(dev, LSM6DSV16X_REG_CTRL8, LSM6DSV16X_CTRL8_FS_16G, 1);
+
+    lsm6dsv16xWriteRegister(dev, LSM6DSV16X_REG_CTRL6,
+                            LSM6DSV16X_CTRL6_FS_2000DPS | lsm6dsv16xGetLpf1Bandwidth(gyro), 1);
+
+    // HIGH_ACCURACY + 1kHz accelerometer ODR
+    lsm6dsv16xWriteRegister(dev, LSM6DSV16X_REG_CTRL1, 0x19, 1);
+
+    // HIGH_ACCURACY + 8kHz gyro ODR
+    lsm6dsv16xWriteRegister(dev, LSM6DSV16X_REG_CTRL2, 0x1C, 1);
+
+    lsm6dsv16xWriteRegister(dev, LSM6DSV16X_REG_CTRL7, LSM6DSV16X_CTRL7_LPF1_G_EN, 1);
+    lsm6dsv16xWriteRegister(dev, LSM6DSV16X_REG_CTRL9, LSM6DSV16X_CTRL9_LPF2_XL_EN, 1);
+    lsm6dsv16xWriteRegister(dev, LSM6DSV16X_REG_CTRL4, LSM6DSV16X_CTRL4_DRDY_PULSED, 1);
+    lsm6dsv16xWriteRegister(dev, LSM6DSV16X_REG_INT1_CTRL, LSM6DSV16X_INT1_DRDY_G, 1);
+
+    busSetSpeed(dev, BUS_SPEED_FAST);
+}
+
+static bool lsm6dsk320xDetect(busDevice_t *dev)
+{
+    uint8_t tmp;
+    uint8_t attemptsRemaining = 5;
+
+    busSetSpeed(dev, BUS_SPEED_INITIALIZATION);
+
+    do {
+        delay(150);
+        busRead(dev, LSM6DSV16X_REG_WHO_AM_I, &tmp);
+
+        if (tmp == LSM6DSK320X_CHIP_ID) {
+            return true;
+        }
+    } while (attemptsRemaining--);
+
+    return false;
+}
+
+static void lsm6dsk320xGyroInit(gyroDev_t *gyro)
+{
+    lsm6dsk320xConfig(gyro);
+}
+
+static void lsm6dsk320xAccInit(accDev_t *acc)
+{
+    acc->acc_1G = 512 * 4;  // ±16g low-g scale, 2048 LSB/g
+}
+
+bool lsm6dsk320xGyroDetect(gyroDev_t *gyro)
+{
+    gyro->busDev = busDeviceInit(BUSTYPE_SPI, DEVHW_LSM6DSK320X, gyro->imuSensorToUse, OWNER_MPU);
+    if (gyro->busDev == NULL) {
+        return false;
+    }
+
+    if (!lsm6dsk320xDetect(gyro->busDev)) {
+        busDeviceDeInit(gyro->busDev);
+        return false;
+    }
+
+    lsm6dsv16xContextData_t *ctx = busDeviceGetScratchpadMemory(gyro->busDev);
+    ctx->chipMagicNumber = LSM6DSK320X_MAGIC;
+
+    gyro->gyroAlign = gyro->busDev->param;
+    gyro->initFn = lsm6dsk320xGyroInit;
+    gyro->readFn = lsm6dsv16xGyroRead;
+    gyro->intStatusFn = gyroCheckDataReady;
+    // 70 mdps/LSB at ±2000 dps
+    gyro->scale = 0.070f;
+
+    return true;
+}
+
+bool lsm6dsk320xAccDetect(accDev_t *acc)
+{
+    acc->busDev = busDeviceOpen(BUSTYPE_SPI, DEVHW_LSM6DSK320X, acc->imuSensorToUse);
+    if (acc->busDev == NULL) {
+        return false;
+    }
+
+    lsm6dsv16xContextData_t *ctx = busDeviceGetScratchpadMemory(acc->busDev);
+    if (ctx->chipMagicNumber != LSM6DSK320X_MAGIC) {
+        return false;
+    }
+
+    acc->initFn = lsm6dsk320xAccInit;
+    acc->readFn = lsm6dsv16xAccRead;
+    acc->accAlign = acc->busDev->param;
+
+    return true;
+}
+
+#endif // USE_IMU_LSM6DSK320X
+
+#endif // USE_IMU_LSM6DSV16X || USE_IMU_LSM6DSK320X
 

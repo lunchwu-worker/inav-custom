@@ -260,6 +260,18 @@ static bool accDetect(accDev_t *dev, accelerationSensor_e accHardwareToUse)
         }
         FALLTHROUGH;
 #endif
+#ifdef USE_IMU_LSM6DSK320X
+    case ACC_LSM6DSK320X:
+        if (lsm6dsk320xAccDetect(dev)) {
+            accHardware = ACC_LSM6DSK320X;
+            break;
+        }
+        /* If we are asked for a specific sensor - break out, otherwise - fall through and continue */
+        if (accHardwareToUse != ACC_AUTODETECT) {
+            break;
+        }
+        FALLTHROUGH;
+#endif
 #ifdef USE_IMU_FAKE
     case ACC_FAKE:
         if (fakeAccDetect(dev)) {
