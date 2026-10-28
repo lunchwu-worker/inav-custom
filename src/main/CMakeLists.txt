@@ -89,6 +89,8 @@ main_sources(COMMON_SRC
     drivers/accgyro/accgyro_icm42605.h
     drivers/accgyro/accgyro_icm45686.c
     drivers/accgyro/accgyro_icm45686.h
+    drivers/accgyro/accgyro_icm42607.c
+    drivers/accgyro/accgyro_icm42607.h
     drivers/accgyro/accgyro_mpu.c
     drivers/accgyro/accgyro_mpu.h
     drivers/accgyro/accgyro_mpu6000.c
@@ -99,6 +101,8 @@ main_sources(COMMON_SRC
     drivers/accgyro/accgyro_mpu9250.h
     drivers/accgyro/accgyro_lsm6dxx.c
     drivers/accgyro/accgyro_lsm6dxx.h
+    drivers/accgyro/accgyro_lsm6dsv16x.c
+    drivers/accgyro/accgyro_lsm6dsv16x.h
 
     drivers/adc.c
     drivers/adc.h

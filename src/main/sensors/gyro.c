@@ -48,7 +48,9 @@
 #include "drivers/accgyro/accgyro_icm20689.h"
 #include "drivers/accgyro/accgyro_icm42605.h"
 #include "drivers/accgyro/accgyro_icm45686.h"
+#include "drivers/accgyro/accgyro_icm42607.h"
 #include "drivers/accgyro/accgyro_lsm6dxx.h"
+#include "drivers/accgyro/accgyro_lsm6dsv16x.h"
 #include "drivers/accgyro/accgyro_fake.h"
 #include "drivers/io.h"
 
@@ -233,6 +235,33 @@ STATIC_UNIT_TESTED gyroSensor_e gyroDetect(gyroDev_t *dev, gyroSensor_e gyroHard
     case GYRO_ICM45686:
         if (icm45686GyroDetect(dev)) {
             gyroHardware = GYRO_ICM45686;
+            break;
+        }
+        FALLTHROUGH;
+#endif
+
+#ifdef USE_IMU_LSM6DSV16X
+    case GYRO_LSM6DSV16X:
+        if (lsm6dsv16xGyroDetect(dev)) {
+            gyroHardware = GYRO_LSM6DSV16X;
+            break;
+        }
+        FALLTHROUGH;
+#endif
+
+#ifdef USE_IMU_LSM6DSK320X
+    case GYRO_LSM6DSK320X:
+        if (lsm6dsk320xGyroDetect(dev)) {
+            gyroHardware = GYRO_LSM6DSK320X;
+            break;
+        }
+        FALLTHROUGH;
+#endif
+
+#ifdef USE_IMU_ICM42607
+    case GYRO_ICM42607:
+        if (icm42607GyroDetect(dev)) {
+            gyroHardware = GYRO_ICM42607;
             break;
         }
         FALLTHROUGH;

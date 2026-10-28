@@ -107,6 +107,8 @@ typedef enum {
     ICM42605_VARIANT_42605 = 0,
     ICM42605_VARIANT_42686P,
     ICM42605_VARIANT_42688P,
+    ICM42605_VARIANT_IIM42652,
+    ICM42605_VARIANT_40608,
 } icm42605Variant_e;
 
 static icm42605Variant_e icm42605DetectedVariant = ICM42605_VARIANT_42605;
@@ -300,7 +302,7 @@ static bool icm42605DeviceDetect(busDevice_t * dev)
         busRead(dev, MPU_RA_WHO_AM_I, &tmp);
 
         switch (tmp) {
-            /* ICM42605, ICM42686P and ICM42688P share the register structure */
+            /* ICM42605, ICM42686P, ICM42688P, IIM42652 and ICM40608 share the register structure */
             case ICM42605_WHO_AM_I_CONST:
                 icm42605DetectedVariant = ICM42605_VARIANT_42605;
                 return true;
@@ -309,6 +311,12 @@ static bool icm42605DeviceDetect(busDevice_t * dev)
                 return true;
             case ICM42688P_WHO_AM_I_CONST:
                 icm42605DetectedVariant = ICM42605_VARIANT_42688P;
+                return true;
+            case IIM42652_WHO_AM_I_CONST:
+                icm42605DetectedVariant = ICM42605_VARIANT_IIM42652;
+                return true;
+            case ICM40608_WHO_AM_I_CONST:
+                icm42605DetectedVariant = ICM42605_VARIANT_40608;
                 return true;
 
             default:
@@ -403,12 +411,16 @@ static const char *icm42605VariantName(icm42605Variant_e variant)
 {
     switch (variant) {
     case ICM42605_VARIANT_42686P:
-        return "42686P";
+        return "ICM42686P";
     case ICM42605_VARIANT_42688P:
-        return "42688P";
+        return "ICM42688P";
+    case ICM42605_VARIANT_IIM42652:
+        return "IIM42652";
+    case ICM42605_VARIANT_40608:
+        return "ICM40608";
     case ICM42605_VARIANT_42605:
     default:
-        return "42605";
+        return "ICM42605";
     }
 }
 
@@ -433,7 +445,7 @@ static const aafConfig_t *getGyroAafConfig(icm42605Variant_e variant, const uint
         }
     }
 
-    LOG_VERBOSE(GYRO, "ICM%s AAF CONFIG { %d, %d } -> { %d }; delt: %d deltSqr: %d, shift: %d",
+    LOG_VERBOSE(GYRO, "%s AAF CONFIG { %d, %d } -> { %d }; delt: %d deltSqr: %d, shift: %d",
                 icm42605VariantName(variant),
                 desiredLpf, desiredFreq,
                 candidate->freq,

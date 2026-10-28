@@ -97,11 +97,29 @@
  * Sensor drivers
  */
 
-// ICM42605/ICM42688P
+// ICM42605/ICM42688P/IIM42652/ICM40608
 #define USE_IMU_ICM42605
 #define IMU_ICM42605_ALIGN      CW270_DEG
 #define ICM42605_CS_PIN         PA4
 #define ICM42605_SPI_BUS        BUS_SPI1
+
+// ICM42607 (shares same SPI bus and CS pin as ICM42605)
+#define USE_IMU_ICM42607
+#define IMU_ICM42607_ALIGN      CW270_DEG
+#define ICM42607_CS_PIN         PA4
+#define ICM42607_SPI_BUS        BUS_SPI1
+
+// LSM6DSV16X (optional, shares same SPI bus and CS pin)
+#define USE_IMU_LSM6DSV16X
+#define IMU_LSM6DSV16X_ALIGN    CW270_DEG
+#define LSM6DSV16X_CS_PIN       PA4
+#define LSM6DSV16X_SPI_BUS      BUS_SPI1
+
+// LSM6DSK320X (optional, same socket). Flight control uses the low-g ±16g channel.
+#define USE_IMU_LSM6DSK320X
+#define IMU_LSM6DSK320X_ALIGN   CW270_DEG
+#define LSM6DSK320X_CS_PIN      PA4
+#define LSM6DSK320X_SPI_BUS     BUS_SPI1
 
 // Baro
 #define USE_BARO
