@@ -24,6 +24,9 @@
 // LSM6DSV16X Chip ID
 #define LSM6DSV16X_CHIP_ID  0x70
 
+// LSM6DSK320X Chip ID. Same register map as LSM6DSV16X, plus a ±320g high-g channel.
+#define LSM6DSK320X_CHIP_ID 0x75
+
 // LSM6DSV16X registers
 typedef enum {
     LSM6DSV16X_REG_FUNC_CFG_ACCESS  = 0x01,
@@ -158,12 +161,17 @@ typedef enum {
 
 // CTRL8 (Accelerometer full-scale) values
 typedef enum {
-    // Full-scale (bits 1:0)
+    // Full-scale (bits 1:0) — low-g channel. LSM6DSK320X also has a separate ±320g high-g channel.
     LSM6DSV16X_CTRL8_FS_2G          = 0x00,
     LSM6DSV16X_CTRL8_FS_4G          = 0x01,
     LSM6DSV16X_CTRL8_FS_8G          = 0x02,
     LSM6DSV16X_CTRL8_FS_16G         = 0x03,
 } lsm6dsv16xCtrl8Values_e;
+
+// CTRL9 values
+typedef enum {
+    LSM6DSV16X_CTRL9_LPF2_XL_EN     = 0x08,  // Enable accelerometer LPF2
+} lsm6dsv16xCtrl9Values_e;
 
 // INT1_CTRL values
 typedef enum {
@@ -184,4 +192,7 @@ typedef enum {
 
 bool lsm6dsv16xAccDetect(accDev_t *acc);
 bool lsm6dsv16xGyroDetect(gyroDev_t *gyro);
+
+bool lsm6dsk320xAccDetect(accDev_t *acc);
+bool lsm6dsk320xGyroDetect(gyroDev_t *gyro);
 
